@@ -2,6 +2,8 @@
   "Private utilities used in schema implementation."
   (:refer-clojure :exclude [record?])
   #+clj (:require [clojure.string :as string])
+  #+clj (:import [java.io Serializable]
+                 [clojure.lang IDeref])
   #+cljs (:require
           goog.string.format
           [goog.string :as gstring]
@@ -163,6 +165,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utilities for fast-as-possible reference to use to turn fn schema validation on/off
+
+#+clj (deftype ConstRef [x]
+        Serializable
+        IDeref
+        (deref [_] x))
 
 (def use-fn-validation
   "Turn on run-time function validation for functions compiled when

@@ -1,8 +1,9 @@
 (ns schema.macros
   "Macros and macro helpers used in schema.core."
   (:require
-   [clojure.string :as str]
-   [schema.utils :as utils]))
+    [clojure.string :as str]
+    [schema.utils :as utils])
+  (:import (schema.utils ConstRef)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helpers used in schema.core.
@@ -59,7 +60,7 @@
 
 (defmacro validation-error [schema value expectation & [fail-explanation]]
   `(schema.utils/error
-    (utils/make-ValidationError ~schema ~value (delay ~expectation) ~fail-explanation)))
+    (utils/make-ValidationError ~schema ~value (ConstRef. ~expectation) ~fail-explanation)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helpers for processing and normalizing element/argument schemas in s/defrecord and s/(de)fn
@@ -211,8 +212,8 @@
         compile-validation (compile-fn-validation? env fn-name)]
     {:schema-binding [input-schema-sym (input-schema-form regular-args rest-arg)]
      :more-bindings (when compile-validation
-                      [input-checker-sym `(delay (schema.core/checker ~input-schema-sym))
-                       output-checker-sym `(delay (schema.core/checker ~output-schema-sym))])
+                      [input-checker-sym `(ConstRef. (schema.core/checker ~input-schema-sym))
+                       output-checker-sym `(ConstRef. (schema.core/checker ~output-schema-sym))])
      :arglist bind
      :raw-arglist original-arglist
      :arity-form (if compile-validation
