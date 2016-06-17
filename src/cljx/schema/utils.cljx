@@ -166,10 +166,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utilities for fast-as-possible reference to use to turn fn schema validation on/off
 
-#+clj (deftype ConstRef [x]
+#+clj (deftype SerializableDelay [^{:volatile-mutable true} result f]
         Serializable
         IDeref
-        (deref [_] x))
+        (deref [_]
+          (if (= :none result)
+            (set! result (f))
+            result)))
+
+#+clj (defmacro serializable-delay [& body]
+        `(SerializableDelay. :none (fn [] ~@body)))
 
 (def use-fn-validation
   "Turn on run-time function validation for functions compiled when

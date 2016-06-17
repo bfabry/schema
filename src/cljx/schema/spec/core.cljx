@@ -2,8 +2,8 @@
   "Protocol and preliminaries for Schema 'specs', which are a common language
    for schemas to use to express their structure."
   (:require
-   #+clj [schema.macros :as macros]
-   [schema.utils :as utils])
+    #+clj [schema.macros :as macros]
+    [schema.utils :as utils])
   #+cljs (:require-macros [schema.macros :as macros]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -75,7 +75,7 @@
 (defn with-cache [cache cache-key wrap-recursive-delay result-fn]
   (if-let [w #+clj (.get ^java.util.Map cache cache-key) #+cljs (@cache cache-key)]
     (if (= ::in-progress w) ;; recursive
-      (wrap-recursive-delay (delay #+clj (.get ^java.util.Map cache cache-key) #+cljs (@cache cache-key)))
+      (wrap-recursive-delay #+clj (utils/serializable-delay (.get ^java.util.Map cache cache-key)) #+cljs (delay (@cache cache-key)))
       w)
     (do #+clj (.put ^java.util.Map cache cache-key ::in-progress) #+cljs (swap! cache assoc cache-key ::in-progress)
         (let [res (result-fn)]
